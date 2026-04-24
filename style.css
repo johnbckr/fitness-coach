@@ -830,6 +830,26 @@ select {
 .api-key-row .btn-ghost { flex-shrink: 0; padding: 10px 12px; }
 
 /* ═══════════════════════════════════════════
+   NOTES
+═══════════════════════════════════════════ */
+.notes-textarea {
+  width: 100%;
+  min-height: 220px;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.notes-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════
    SYNC
 ═══════════════════════════════════════════ */
 .sync-code-box {

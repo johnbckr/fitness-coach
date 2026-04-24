@@ -13,13 +13,14 @@ const KEYS = {
   API_KEY:       'fc_api_key',
   API_PROVIDER:  'fc_api_provider',
   SYNC_CODE:     'fc_sync_code',
-  SYNC_LAST:     'fc_sync_last'
+  SYNC_LAST:     'fc_sync_last',
+  NOTES:         'fc_notes'
 };
 
-// Keys that sync to the cloud (photos excluded — too large)
 const SYNC_KEYS = [
   KEYS.PROFILE, KEYS.CHAT_HISTORY, KEYS.TRAINING_PLAN,
-  KEYS.WEIGHT_LOG, KEYS.WORKOUT_LOG, KEYS.MEAL_LOG
+  KEYS.WEIGHT_LOG, KEYS.WORKOUT_LOG, KEYS.MEAL_LOG,
+  KEYS.PHOTO_CURRENT, KEYS.PHOTO_GOAL, KEYS.NOTES
 ];
 
 // ═══════════════════════════════════════════
@@ -178,7 +179,10 @@ Antworte immer auf Deutsch. Direkt, präzise, ergebnisorientiert.
 Keine Floskeln — nur was für diesen spezifischen Körper und dieses Ziel relevant ist.
 ` : 'Du bist ein Fitnesscoach. Antworte auf Deutsch. Sei direkt und ergebnisorientiert.';
 
-  return base.trim();
+  const notes = localStorage.getItem(KEYS.NOTES);
+  const notesSection = notes ? `\n\n=== ZUSÄTZLICHE INFOS ===\n${notes}` : '';
+
+  return (base + notesSection).trim();
 }
 
 // ═══════════════════════════════════════════
@@ -275,6 +279,7 @@ function initProfile() {
   refreshProfilePhotos();
   renderApiTab();
   initSyncTab();
+  initNotesTab();
 
   const editBirthdate = document.getElementById('edit-birthdate');
   if (editBirthdate) editBirthdate.max = new Date().toISOString().split('T')[0];
@@ -297,6 +302,7 @@ function switchProfileTab(tabName, btn) {
   if (tabName === 'photos') refreshProfilePhotos();
   if (tabName === 'api') renderApiTab();
   if (tabName === 'sync') initSyncTab();
+  if (tabName === 'notes') initNotesTab();
 }
 
 function prefillEditForm() {
@@ -414,6 +420,23 @@ function refreshProfilePhotos() {
       if (ph) ph.classList.add('hidden');
     }
   });
+}
+
+// ═══════════════════════════════════════════
+// PERSONAL NOTES
+// ═══════════════════════════════════════════
+function initNotesTab() {
+  const ta = document.getElementById('notes-textarea');
+  if (ta) ta.value = localStorage.getItem(KEYS.NOTES) || '';
+}
+
+function saveNotes() {
+  const ta = document.getElementById('notes-textarea');
+  const val = ta?.value || '';
+  localStorage.setItem(KEYS.NOTES, val);
+  scheduleSyncToCloud();
+  const fb = document.getElementById('notes-save-feedback');
+  if (fb) { fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2500); }
 }
 
 // ═══════════════════════════════════════════

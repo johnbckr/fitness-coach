@@ -304,6 +304,7 @@
 
       <div class="tabs-bar">
         <button class="tab-btn active" onclick="switchProfileTab('data', this)">Profil</button>
+        <button class="tab-btn" onclick="switchProfileTab('notes', this)">Infos</button>
         <button class="tab-btn" onclick="switchProfileTab('api', this)">API</button>
         <button class="tab-btn" onclick="switchProfileTab('photos', this)">Fotos</button>
         <button class="tab-btn" onclick="switchProfileTab('sync', this)">Sync</button>
@@ -417,6 +418,18 @@
           Speichern
         </button>
         <p class="save-feedback hidden" id="edit-save-feedback">✅ Gespeichert!</p>
+      </div>
+
+      <!-- ── TAB: PERSÖNLICHE INFOS ── -->
+      <div id="ptab-notes" class="profile-tab-content hidden">
+        <div class="card">
+          <h3>Persönliche Infos für den Coach</h3>
+          <p class="settings-hint">Alles was der Coach über dich wissen soll — Arbeitsbedingungen, Trainingszyklus, Einschränkungen, Gewohnheiten. Wird automatisch in jeden Chat eingebaut.</p>
+          <textarea id="notes-textarea" class="notes-textarea"
+            placeholder="Beispiele:&#10;- Mein aktueller Zyklus: Woche 1-4 Push/Pull/Legs, Woche 5 Deload&#10;- Auf der Arbeit keine Pausen möglich (12h Schicht)&#10;- Trainiere meistens abends nach der Spätschicht&#10;- Schlafe nach Nachtschicht bis 15 Uhr&#10;- Koche nur 1-2x pro Woche vor (Meal Prep)&#10;- Habe leichte Knieschmerzen beim Beintraining"></textarea>
+          <button class="btn-primary full-width" onclick="saveNotes()" style="margin-top:10px">Speichern</button>
+          <p class="save-feedback hidden" id="notes-save-feedback">✅ Gespeichert!</p>
+        </div>
       </div>
 
       <!-- ── TAB: API & ANBIETER ── -->
