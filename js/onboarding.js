@@ -42,11 +42,13 @@ function prevStep() {
 function validateStep(step) {
   if (step === 1) {
     const name = document.getElementById('ob-name')?.value.trim();
-    const age = document.getElementById('ob-age')?.value;
+    const birthdate = document.getElementById('ob-birthdate')?.value;
     const weight = document.getElementById('ob-weight')?.value;
     const height = document.getElementById('ob-height')?.value;
     if (!name) { alert('Bitte gib deinen Namen ein.'); return false; }
-    if (!age || age < 16 || age > 80) { alert('Bitte ein gültiges Alter eingeben.'); return false; }
+    if (!birthdate) { alert('Bitte gib dein Geburtsdatum ein.'); return false; }
+    const age = calcAgeFromBirthdate(birthdate);
+    if (age < 16 || age > 80) { alert('Bitte ein gültiges Geburtsdatum eingeben.'); return false; }
     if (!weight || weight < 40) { alert('Bitte ein gültiges Gewicht eingeben.'); return false; }
     if (!height || height < 140) { alert('Bitte eine gültige Größe eingeben.'); return false; }
   }
@@ -60,7 +62,7 @@ function validateStep(step) {
 function finishOnboarding() {
   const profile = {
     name:          document.getElementById('ob-name').value.trim(),
-    age:           parseInt(document.getElementById('ob-age').value),
+    birthDate:     document.getElementById('ob-birthdate').value,
     gender:        document.getElementById('ob-gender').value,
     weight:        parseFloat(document.getElementById('ob-weight').value),
     height:        parseInt(document.getElementById('ob-height').value),
@@ -112,4 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initSelectorButtons('meals-selector', 'ob-meals');
   initShiftWorkToggle();
   updateProgress();
+
+  // Prevent future dates in birthdate picker
+  const birthdateInput = document.getElementById('ob-birthdate');
+  if (birthdateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    birthdateInput.max = today;
+  }
 });

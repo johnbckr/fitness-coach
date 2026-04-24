@@ -145,7 +145,7 @@ Deine EINZIGE Mission: ${profile.name} so effizient wie möglich von seinem aktu
 4. Muskelfülle durch progressive Overload
 
 Profil:
-- Alter: ${profile.age} | Gewicht: ${profile.weight}kg | Größe: ${profile.height}cm${profile.bodyFat ? ` | KF: ${profile.bodyFat}%` : ''}
+- Alter: ${getAge(profile)} Jahre | Gewicht: ${profile.weight}kg | Größe: ${profile.height}cm${profile.bodyFat ? ` | KF: ${profile.bodyFat}%` : ''}
 - Fitnesslevel: ${profile.fitnessLevel} | Trainingstage: ${profile.trainingDays}/Woche | Equipment: ${profile.equipment}
 - Ernährung: ${profile.diet}${profile.allergies ? ` | Allergien: ${profile.allergies}` : ''}
 - Schichtarbeit: ${profile.shiftWork ? profile.shiftDetails || 'Ja' : 'Nein'}
@@ -164,9 +164,10 @@ Keine Floskeln — nur was für diesen spezifischen Körper und dieses Ziel rele
 function calculateTDEE(profile) {
   if (!profile) return 2200;
   const isMale = profile.gender !== 'weiblich';
+  const age = getAge(profile);
   const bmr = isMale
-    ? 10 * profile.weight + 6.25 * profile.height - 5 * profile.age + 5
-    : 10 * profile.weight + 6.25 * profile.height - 5 * profile.age - 161;
+    ? 10 * profile.weight + 6.25 * profile.height - 5 * age + 5
+    : 10 * profile.weight + 6.25 * profile.height - 5 * age - 161;
 
   const multipliers = {
     'sitzend':      1.2,
@@ -253,9 +254,15 @@ function initProfile() {
   const content = document.getElementById('profile-info-content');
   if (!content || !profile) return;
 
+  const age = getAge(profile);
+  const birthFormatted = profile.birthDate
+    ? new Date(profile.birthDate).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—';
+
   const rows = [
     ['Name', profile.name],
-    ['Alter', profile.age + ' Jahre'],
+    ['Geburtsdatum', birthFormatted],
+    ['Alter', age + ' Jahre'],
     ['Gewicht', profile.weight + ' kg'],
     ['Größe', profile.height + ' cm'],
     ['Fitnesslevel', profile.fitnessLevel],
@@ -299,6 +306,20 @@ function resetApp() {
 // ═══════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════
+function calcAgeFromBirthdate(birthDate) {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+function getAge(profile) {
+  if (profile.birthDate) return calcAgeFromBirthdate(profile.birthDate);
+  return profile.age || 25;
+}
+
 function getWeekStart() {
   const d = new Date();
   const day = d.getDay();
