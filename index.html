@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mein Fitness Coach</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       ONBOARDING
+  ═══════════════════════════════════════════ -->
+  <div id="page-onboarding" class="page">
+    <div class="ob-container">
+      <div class="ob-top">
+        <div class="ob-logo">💪</div>
+        <h1 class="ob-title">Dein persönlicher<br>Fitness Coach</h1>
+      </div>
+
+      <div class="ob-progress-bar">
+        <div class="ob-progress-fill" id="ob-progress"></div>
+      </div>
+      <p class="ob-step-label" id="ob-step-label">Schritt 1 von 4</p>
+
+      <!-- STEP 1: Persönliche Daten + Fotos -->
+      <div class="ob-step" id="ob-step-1">
+        <h2>Über dich</h2>
+        <p class="ob-subtitle">Lass deinen Coach dich kennenlernen</p>
+
+        <div class="form-group">
+          <label>Dein Name <span class="required">*</span></label>
+          <input type="text" id="ob-name" placeholder="z.B. John" autocomplete="given-name">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Alter <span class="required">*</span></label>
+            <input type="number" id="ob-age" placeholder="22" min="16" max="80">
+          </div>
+          <div class="form-group">
+            <label>Geschlecht</label>
+            <select id="ob-gender">
+              <option value="männlich">Männlich</option>
+              <option value="weiblich">Weiblich</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Gewicht (kg) <span class="required">*</span></label>
+            <input type="number" id="ob-weight" placeholder="80" step="0.5" min="40" max="200">
+          </div>
+          <div class="form-group">
+            <label>Größe (cm) <span class="required">*</span></label>
+            <input type="number" id="ob-height" placeholder="180" min="140" max="220">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Körperfett % <span class="optional">(optional)</span></label>
+          <input type="number" id="ob-bf" placeholder="16" step="0.5" min="5" max="50">
+        </div>
+
+        <div class="photo-upload-section">
+          <h3>Deine Transformation 📸</h3>
+          <p class="photo-hint">Hilft dem Coach dir präzisere Empfehlungen zu geben</p>
+          <div class="photo-grid">
+            <div class="photo-card">
+              <label class="photo-label" for="photo-input-current">
+                <div class="photo-placeholder" id="photo-ph-current">
+                  <span class="photo-icon">+</span>
+                  <p>Aktuelles Foto</p>
+                </div>
+                <img id="photo-preview-current" class="photo-preview hidden" alt="Aktuell">
+              </label>
+              <input type="file" id="photo-input-current" accept="image/*" class="hidden"
+                     onchange="handlePhotoUpload('current', this)">
+            </div>
+            <div class="photo-card">
+              <label class="photo-label" for="photo-input-goal">
+                <div class="photo-placeholder" id="photo-ph-goal">
+                  <span class="photo-icon">🎯</span>
+                  <p>Ziel-Foto</p>
+                </div>
+                <img id="photo-preview-goal" class="photo-preview hidden" alt="Ziel">
+              </label>
+              <input type="file" id="photo-input-goal" accept="image/*" class="hidden"
+                     onchange="handlePhotoUpload('goal', this)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Ziele & Training -->
+      <div class="ob-step hidden" id="ob-step-2">
+        <h2>Training</h2>
+        <p class="ob-subtitle">Wie und wie oft trainierst du?</p>
+
+        <div class="form-group">
+          <label>Dein Ziel</label>
+          <div class="goal-card selected">
+            <span class="goal-icon">⚖️</span>
+            <div>
+              <strong>Recomposition</strong>
+              <p>Muskeln aufbauen + Fett verlieren gleichzeitig</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Fitnesslevel <span class="required">*</span></label>
+          <select id="ob-fitness">
+            <option value="Anfänger">Anfänger (unter 1 Jahr Training)</option>
+            <option value="Fortgeschritten" selected>Fortgeschritten (1–3 Jahre)</option>
+            <option value="Profi">Profi (über 3 Jahre)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Trainingstage pro Woche <span class="required">*</span></label>
+          <div class="days-selector" id="days-selector">
+            <button type="button" class="day-btn" data-val="2">2</button>
+            <button type="button" class="day-btn" data-val="3">3</button>
+            <button type="button" class="day-btn active" data-val="4">4</button>
+            <button type="button" class="day-btn" data-val="5">5</button>
+            <button type="button" class="day-btn" data-val="6">6</button>
+          </div>
+          <input type="hidden" id="ob-days" value="4">
+        </div>
+
+        <div class="form-group">
+          <label>Verfügbares Equipment <span class="required">*</span></label>
+          <select id="ob-equipment">
+            <option value="Fitnessstudio">Fitnessstudio (volle Ausstattung)</option>
+            <option value="Zuhause">Zuhause (Kurzhanteln, Körpergewicht)</option>
+            <option value="Beides">Beides</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- STEP 3: Ernährung -->
+      <div class="ob-step hidden" id="ob-step-3">
+        <h2>Ernährung</h2>
+        <p class="ob-subtitle">Damit dein Coach die richtigen Rezepte erstellt</p>
+
+        <div class="form-group">
+          <label>Ernährungsform</label>
+          <select id="ob-diet">
+            <option value="Normal">Normal (alles)</option>
+            <option value="Vegetarisch">Vegetarisch</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Laktosefrei">Laktosefrei</option>
+            <option value="Glutenfrei">Glutenfrei</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Allergien / Unverträglichkeiten <span class="optional">(optional)</span></label>
+          <input type="text" id="ob-allergies" placeholder="z.B. Nüsse, Fisch...">
+        </div>
+
+        <div class="form-group">
+          <label>Mahlzeiten pro Tag</label>
+          <div class="days-selector" id="meals-selector">
+            <button type="button" class="day-btn" data-val="2">2</button>
+            <button type="button" class="day-btn active" data-val="3">3</button>
+            <button type="button" class="day-btn" data-val="4">4</button>
+            <button type="button" class="day-btn" data-val="5">5</button>
+          </div>
+          <input type="hidden" id="ob-meals" value="3">
+        </div>
+      </div>
+
+      <!-- STEP 4: Lebensweise -->
+      <div class="ob-step hidden" id="ob-step-4">
+        <h2>Dein Alltag</h2>
+        <p class="ob-subtitle">Für einen Plan der zu deinem Leben passt</p>
+
+        <div class="form-group">
+          <label>Täglicher Aktivitätslevel</label>
+          <select id="ob-activity">
+            <option value="sitzend">Sitzend (Büro, wenig Bewegung)</option>
+            <option value="leicht aktiv" selected>Leicht aktiv (manchmal Bewegung)</option>
+            <option value="aktiv">Aktiv (körperliche Arbeit)</option>
+            <option value="sehr aktiv">Sehr aktiv (täglich intensive Bewegung)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Schichtarbeit?</label>
+          <select id="ob-shiftwork">
+            <option value="no">Nein, feste Arbeitszeiten</option>
+            <option value="yes">Ja, ich arbeite in Schichten</option>
+          </select>
+        </div>
+
+        <div class="form-group hidden" id="ob-shift-group">
+          <label>Dein Schichtsystem</label>
+          <input type="text" id="ob-shift-details"
+                 placeholder="z.B. Früh 6–14h, Spät 14–22h, Nacht 22–6h, wechselnd">
+        </div>
+
+        <div class="ob-ready-card">
+          <div class="ob-ready-icon">🚀</div>
+          <p>Dein Coach ist bereit alles zu geben.<br>Lass uns deine Transformation starten.</p>
+        </div>
+      </div>
+
+      <!-- NAV BUTTONS -->
+      <div class="ob-buttons">
+        <button id="ob-back" class="btn-outline hidden" onclick="prevStep()">← Zurück</button>
+        <button id="ob-next" class="btn-primary" onclick="nextStep()">Weiter →</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       DASHBOARD
+  ═══════════════════════════════════════════ -->
+  <div id="page-dashboard" class="page hidden">
+    <div class="page-scroll">
+      <div class="dash-header">
+        <div>
+          <p class="dash-greeting">Hey, <span id="dash-name">John</span> 👋</p>
+          <p class="dash-date" id="dash-date"></p>
+        </div>
+        <button class="profile-btn" onclick="navigate('profile')" title="Profil">⚙️</button>
+      </div>
+
+      <div class="dash-transformation">
+        <h3>Deine Transformation</h3>
+        <div class="transform-photos">
+          <div class="transform-photo-wrap">
+            <img id="dash-photo-current" class="transform-photo hidden" alt="Jetzt">
+            <div id="dash-photo-ph-current" class="transform-photo-ph">Jetzt</div>
+            <span class="transform-label">Jetzt</span>
+          </div>
+          <div class="transform-arrow">→</div>
+          <div class="transform-photo-wrap">
+            <img id="dash-photo-goal" class="transform-photo hidden" alt="Ziel">
+            <div id="dash-photo-ph-goal" class="transform-photo-ph">Ziel</div>
+            <span class="transform-label">Ziel</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-stats">
+        <div class="stat-card">
+          <span class="stat-icon">⚖️</span>
+          <span class="stat-value" id="dash-weight">—</span>
+          <span class="stat-label">kg</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-value" id="dash-calories">—</span>
+          <span class="stat-label">kcal/Tag</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">💪</span>
+          <span class="stat-value" id="dash-workouts">0</span>
+          <span class="stat-label">Trainings/Woche</span>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-card" onclick="navigate('chat')">
+          <div class="dash-card-icon">🤖</div>
+          <h4>Coach fragen</h4>
+          <p>Rezepte, Tipps, Analyse</p>
+        </div>
+        <div class="dash-card" onclick="navigate('training')">
+          <div class="dash-card-icon">🏋️</div>
+          <h4>Trainingsplan</h4>
+          <p id="dash-plan-status">Plan ansehen</p>
+        </div>
+        <div class="dash-card" onclick="navigate('nutrition')">
+          <div class="dash-card-icon">🥗</div>
+          <h4>Ernährung</h4>
+          <p>Makros & Rezepte</p>
+        </div>
+        <div class="dash-card" onclick="navigate('tracking')">
+          <div class="dash-card-icon">📈</div>
+          <h4>Fortschritt</h4>
+          <p>Gewicht & Logs</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       PROFILE (Settings)
+  ═══════════════════════════════════════════ -->
+  <div id="page-profile" class="page hidden">
+    <div class="page-scroll">
+      <div class="page-header">
+        <button class="back-btn" onclick="navigate('dashboard')">← Zurück</button>
+        <h2>Profil</h2>
+        <div></div>
+      </div>
+
+      <div class="card">
+        <h3>Fotos aktualisieren</h3>
+        <div class="photo-grid">
+          <div class="photo-card">
+            <label class="photo-label" for="profile-photo-current">
+              <img id="profile-preview-current" class="photo-preview hidden" alt="Jetzt">
+              <div class="photo-placeholder" id="profile-ph-current">
+                <span class="photo-icon">+</span>
+                <p>Aktuelles Foto</p>
+              </div>
+            </label>
+            <input type="file" id="profile-photo-current" accept="image/*" class="hidden"
+                   onchange="handlePhotoUpload('current', this); refreshProfilePhotos()">
+          </div>
+          <div class="photo-card">
+            <label class="photo-label" for="profile-photo-goal">
+              <img id="profile-preview-goal" class="photo-preview hidden" alt="Ziel">
+              <div class="photo-placeholder" id="profile-ph-goal">
+                <span class="photo-icon">🎯</span>
+                <p>Ziel-Foto</p>
+              </div>
+            </label>
+            <input type="file" id="profile-photo-goal" accept="image/*" class="hidden"
+                   onchange="handlePhotoUpload('goal', this); refreshProfilePhotos()">
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="profile-info-card">
+        <h3>Profil-Daten</h3>
+        <div id="profile-info-content"></div>
+      </div>
+
+      <button class="btn-danger" onclick="resetApp()">App zurücksetzen</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       CHAT
+  ═══════════════════════════════════════════ -->
+  <div id="page-chat" class="page hidden">
+    <div class="chat-layout">
+      <div class="chat-header">
+        <div class="coach-badge">
+          <span class="coach-avatar-icon">🏋️</span>
+          <div>
+            <strong>Coach</strong>
+            <span class="coach-status">Online</span>
+          </div>
+        </div>
+        <button class="btn-ghost-small" onclick="clearChat()">Löschen</button>
+      </div>
+
+      <div class="chat-chips" id="chat-chips">
+        <button class="chip" onclick="sendChip('Erstelle mir einen personalisierten Trainingsplan basierend auf meinem Profil')">💪 Trainingsplan</button>
+        <button class="chip" onclick="sendChip('Was soll ich heute essen? Erstelle mir einen Tagesplan')">🥗 Tagesplan</button>
+        <button class="chip" onclick="sendChip('Gib mir ein High-Protein Rezept das ich schnell zubereiten kann')">🍳 Rezept</button>
+        <button class="chip" onclick="sendChip('Analysiere meinen aktuellen Fortschritt und sag mir was ich anpassen muss')">📊 Analyse</button>
+      </div>
+
+      <div class="chat-messages" id="chat-messages"></div>
+
+      <div class="chat-input-wrap">
+        <textarea id="chat-input" placeholder="Frag deinen Coach..." rows="1"
+                  onkeydown="handleChatKey(event)"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
+          <span>↑</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       TRAINING
+  ═══════════════════════════════════════════ -->
+  <div id="page-training" class="page hidden">
+    <div class="page-scroll">
+      <div class="page-header">
+        <h2>Trainingsplan</h2>
+        <button class="btn-outline-small" onclick="generateTrainingPlan()">↺ Neu</button>
+      </div>
+
+      <div id="training-loading" class="loading-state hidden">
+        <div class="spinner"></div>
+        <p>Coach erstellt deinen Plan...</p>
+      </div>
+
+      <div id="training-empty" class="empty-state">
+        <div class="empty-icon">🏋️</div>
+        <p>Noch kein Trainingsplan</p>
+        <button class="btn-primary" onclick="generateTrainingPlan()">Plan erstellen</button>
+      </div>
+
+      <div id="training-content" class="hidden"></div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       NUTRITION
+  ═══════════════════════════════════════════ -->
+  <div id="page-nutrition" class="page hidden">
+    <div class="page-scroll">
+      <div class="page-header">
+        <h2>Ernährung</h2>
+      </div>
+
+      <div class="card" id="macro-card">
+        <h3>Deine Tagesziele</h3>
+        <div id="macro-display"></div>
+      </div>
+
+      <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="recipes" onclick="switchNutritionTab('recipes', this)">Rezepte</button>
+        <button class="tab-btn" data-tab="mealplan" onclick="switchNutritionTab('mealplan', this)">Tagesplan</button>
+        <button class="tab-btn" data-tab="meallog" onclick="switchNutritionTab('meallog', this)">Mahlzeiten-Log</button>
+      </div>
+
+      <div id="ntab-recipes" class="nutrition-tab-content">
+        <div class="input-action-row">
+          <input type="text" id="recipe-ingredients"
+                 placeholder="Zutaten: Hähnchen, Reis, Brokkoli...">
+          <button class="btn-primary" onclick="generateRecipe()">Erstellen</button>
+        </div>
+        <div id="recipe-output"></div>
+      </div>
+
+      <div id="ntab-mealplan" class="nutrition-tab-content hidden">
+        <button class="btn-primary full-width" onclick="generateMealPlan()">Tagesplan generieren</button>
+        <div id="mealplan-output"></div>
+      </div>
+
+      <div id="ntab-meallog" class="nutrition-tab-content hidden">
+        <div class="input-action-row">
+          <input type="text" id="meal-log-input" placeholder="Was hast du gegessen?">
+          <button class="btn-primary" onclick="logMeal()">+</button>
+        </div>
+        <div id="meal-log-list"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       TRACKING
+  ═══════════════════════════════════════════ -->
+  <div id="page-tracking" class="page hidden">
+    <div class="page-scroll">
+      <div class="page-header">
+        <h2>Fortschritt</h2>
+      </div>
+
+      <div class="card">
+        <h3>Gewicht eintragen</h3>
+        <div class="weight-input-row">
+          <input type="number" id="weight-input" placeholder="kg" step="0.1" min="30" max="300">
+          <button class="btn-primary" id="weight-log-btn" onclick="logWeight()">Eintragen</button>
+        </div>
+        <p class="weight-trend" id="weight-trend"></p>
+      </div>
+
+      <div class="card">
+        <h3>Gewichtsverlauf</h3>
+        <svg id="weight-chart" class="weight-chart-svg"></svg>
+      </div>
+
+      <div class="card streak-card">
+        <div id="streak-display" class="streak-text">🔥 0 Trainings diese Woche</div>
+      </div>
+
+      <div class="card">
+        <div class="checkin-row">
+          <div>
+            <h3>Wöchentlicher Check-in</h3>
+            <p>Coach wertet deine Woche aus</p>
+          </div>
+          <button class="btn-primary" onclick="startCheckIn()">Starten</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Trainings-Log</h3>
+        <div id="workout-log-list"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       BOTTOM NAVIGATION
+  ═══════════════════════════════════════════ -->
+  <nav id="bottom-nav" class="hidden">
+    <button class="nav-item" data-page="dashboard" onclick="navigate('dashboard')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" data-page="training" onclick="navigate('training')">
+      <span class="nav-icon">💪</span>
+      <span class="nav-label">Training</span>
+    </button>
+    <button class="nav-item" data-page="nutrition" onclick="navigate('nutrition')">
+      <span class="nav-icon">🥗</span>
+      <span class="nav-label">Ernährung</span>
+    </button>
+    <button class="nav-item" data-page="tracking" onclick="navigate('tracking')">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Fortschritt</span>
+    </button>
+    <button class="nav-item" data-page="chat" onclick="navigate('chat')">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">Coach</span>
+    </button>
+  </nav>
+
+  <script src="js/app.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/training.js"></script>
+  <script src="js/nutrition.js"></script>
+  <script src="js/tracking.js"></script>
+</body>
+</html>
