@@ -11,8 +11,16 @@ const KEYS = {
   PHOTO_GOAL:    'fc_photo_goal',
   MEAL_LOG:      'fc_meal_log',
   API_KEY:       'fc_api_key',
-  API_PROVIDER:  'fc_api_provider'
+  API_PROVIDER:  'fc_api_provider',
+  SYNC_CODE:     'fc_sync_code',
+  SYNC_LAST:     'fc_sync_last'
 };
+
+// Keys that sync to the cloud (photos excluded — too large)
+const SYNC_KEYS = [
+  KEYS.PROFILE, KEYS.CHAT_HISTORY, KEYS.TRAINING_PLAN,
+  KEYS.WEIGHT_LOG, KEYS.WORKOUT_LOG, KEYS.MEAL_LOG
+];
 
 // ═══════════════════════════════════════════
 // NAVIGATION
@@ -266,6 +274,7 @@ function initProfile() {
   prefillEditForm();
   refreshProfilePhotos();
   renderApiTab();
+  initSyncTab();
 
   const editBirthdate = document.getElementById('edit-birthdate');
   if (editBirthdate) editBirthdate.max = new Date().toISOString().split('T')[0];
@@ -287,6 +296,7 @@ function switchProfileTab(tabName, btn) {
   if (btn) btn.classList.add('active');
   if (tabName === 'photos') refreshProfilePhotos();
   if (tabName === 'api') renderApiTab();
+  if (tabName === 'sync') initSyncTab();
 }
 
 function prefillEditForm() {
@@ -336,6 +346,7 @@ function saveProfileEdit() {
     shiftDetails:  document.getElementById('edit-shift-details')?.value.trim() || ''
   };
   saveProfile(updated);
+  scheduleSyncToCloud();
   const fb = document.getElementById('edit-save-feedback');
   if (fb) { fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2500); }
 }
@@ -403,6 +414,165 @@ function refreshProfilePhotos() {
       if (ph) ph.classList.add('hidden');
     }
   });
+}
+
+// ═══════════════════════════════════════════
+// CLOUD SYNC
+// ═══════════════════════════════════════════
+function generateSyncCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+function getOrCreateSyncCode() {
+  let code = localStorage.getItem(KEYS.SYNC_CODE);
+  if (!code) {
+    code = generateSyncCode();
+    localStorage.setItem(KEYS.SYNC_CODE, code);
+  }
+  return code;
+}
+
+function gatherSyncData() {
+  const data = {};
+  SYNC_KEYS.forEach(key => {
+    const val = localStorage.getItem(key);
+    if (val) data[key] = val;
+  });
+  return data;
+}
+
+function applySyncData(data) {
+  if (!data) return;
+  SYNC_KEYS.forEach(key => {
+    if (data[key] !== undefined) localStorage.setItem(key, data[key]);
+  });
+}
+
+async function syncToCloud() {
+  const syncCode = getOrCreateSyncCode();
+  const data = gatherSyncData();
+  try {
+    const res = await fetch('/.netlify/functions/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sync_code: syncCode, data })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    const now = new Date().toISOString();
+    localStorage.setItem(KEYS.SYNC_LAST, now);
+    updateSyncStatus();
+  } catch (err) {
+    console.warn('Sync failed:', err.message);
+  }
+}
+
+async function loadFromCloud(code) {
+  const res = await fetch(`/.netlify/functions/sync?code=${encodeURIComponent(code)}`);
+  const row = await res.json();
+  if (!res.ok) throw new Error(row.error || `HTTP ${res.status}`);
+  return row;
+}
+
+async function connectSyncCode() {
+  const input = document.getElementById('sync-connect-input');
+  const code = input?.value.trim().toUpperCase();
+  if (!code || code.length < 4) { alert('Bitte einen gültigen Sync-Code eingeben.'); return; }
+
+  const btn = document.getElementById('sync-connect-btn');
+  if (btn) btn.disabled = true;
+  setSyncMsg('Verbinde...', 'neutral');
+
+  try {
+    const row = await loadFromCloud(code);
+    if (!row) { setSyncMsg('❌ Code nicht gefunden. Bitte prüfen.', 'error'); return; }
+    applySyncData(row.data);
+    localStorage.setItem(KEYS.SYNC_CODE, code);
+    localStorage.setItem(KEYS.SYNC_LAST, row.updated_at || new Date().toISOString());
+    setSyncMsg('✅ Verbunden! Daten wurden übertragen.', 'ok');
+    initSyncTab();
+    // Reload app state
+    const profile = getProfile();
+    if (profile) {
+      document.getElementById('bottom-nav').classList.remove('hidden');
+      navigate('dashboard');
+    }
+  } catch (err) {
+    setSyncMsg('❌ Fehler: ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+let _syncTimer = null;
+function scheduleSyncToCloud() {
+  if (window.location.protocol === 'file:') return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(syncToCloud, 3000);
+}
+
+function initSyncTab() {
+  const code = getOrCreateSyncCode();
+  const codeEl = document.getElementById('sync-code-display');
+  if (codeEl) codeEl.textContent = code;
+
+  const lastEl = document.getElementById('sync-last-time');
+  if (lastEl) {
+    const last = localStorage.getItem(KEYS.SYNC_LAST);
+    lastEl.textContent = last
+      ? 'Zuletzt: ' + new Date(last).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
+      : 'Noch nicht synchronisiert';
+  }
+}
+
+function updateSyncStatus() {
+  const lastEl = document.getElementById('sync-last-time');
+  if (!lastEl) return;
+  const last = localStorage.getItem(KEYS.SYNC_LAST);
+  if (last) lastEl.textContent = 'Zuletzt: ' + new Date(last).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
+function setSyncMsg(msg, type) {
+  const el = document.getElementById('sync-status-msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sync-status-msg ' + (type || '');
+}
+
+async function manualSync() {
+  const btn = document.getElementById('sync-now-btn');
+  if (btn) btn.disabled = true;
+  setSyncMsg('Synchronisiere...', 'neutral');
+  try {
+    await syncToCloud();
+    setSyncMsg('✅ Synchronisiert!', 'ok');
+  } catch (err) {
+    setSyncMsg('❌ ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function copySyncCode() {
+  const code = localStorage.getItem(KEYS.SYNC_CODE);
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('sync-copy-btn');
+    if (btn) { const orig = btn.textContent; btn.textContent = '✅ Kopiert'; setTimeout(() => btn.textContent = orig, 2000); }
+  });
+}
+
+function resetSyncCode() {
+  if (!confirm('Neuen Sync-Code erstellen? Der alte Code wird ungültig.')) return;
+  const code = generateSyncCode();
+  localStorage.setItem(KEYS.SYNC_CODE, code);
+  initSyncTab();
+  syncToCloud();
 }
 
 function resetApp() {

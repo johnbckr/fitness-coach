@@ -306,6 +306,7 @@
         <button class="tab-btn active" onclick="switchProfileTab('data', this)">Profil</button>
         <button class="tab-btn" onclick="switchProfileTab('api', this)">API</button>
         <button class="tab-btn" onclick="switchProfileTab('photos', this)">Fotos</button>
+        <button class="tab-btn" onclick="switchProfileTab('sync', this)">Sync</button>
       </div>
 
       <!-- ── TAB: PROFIL BEARBEITEN ── -->
@@ -491,6 +492,39 @@
                      onchange="handlePhotoUpload('goal', this); refreshProfilePhotos()">
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- ── TAB: SYNC ── -->
+      <div id="ptab-sync" class="profile-tab-content hidden">
+        <div class="card">
+          <h3>Dein Sync-Code</h3>
+          <p class="settings-hint">Gib diesen Code auf einem anderen Gerät ein, um alle Daten zu übertragen. Fotos werden separat hochgeladen.</p>
+          <div class="sync-code-box">
+            <span id="sync-code-display" class="sync-code-text">——</span>
+          </div>
+          <div class="sync-actions">
+            <button class="btn-outline" id="sync-copy-btn" onclick="copySyncCode()">📋 Kopieren</button>
+            <button class="btn-primary" id="sync-now-btn" onclick="manualSync()">☁️ Jetzt sync</button>
+          </div>
+          <p class="sync-last" id="sync-last-time"></p>
+          <p class="sync-status-msg" id="sync-status-msg"></p>
+        </div>
+
+        <div class="card">
+          <h3>Auf anderem Gerät verbinden</h3>
+          <p class="settings-hint">Gib hier den Sync-Code von deinem anderen Gerät ein.</p>
+          <div class="api-key-row">
+            <input type="text" id="sync-connect-input" placeholder="z.B. ABC123"
+                   maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center">
+            <button class="btn-primary" id="sync-connect-btn" onclick="connectSyncCode()">Laden</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Neuer Code</h3>
+          <p class="settings-hint">Erstellt einen neuen Code. Der alte wird ungültig.</p>
+          <button class="btn-danger full-width" onclick="resetSyncCode()">Neuen Code erstellen</button>
         </div>
       </div>
 

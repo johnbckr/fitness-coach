@@ -145,6 +145,7 @@ function logMeal() {
   log.unshift({ date: new Date().toISOString(), meal: text });
   if (log.length > 100) log.length = 100;
   localStorage.setItem(KEYS.MEAL_LOG, JSON.stringify(log));
+  scheduleSyncToCloud();
 
   input.value = '';
   renderMealLog();

@@ -56,6 +56,7 @@ Füge pro Tag 5-7 Übungen ein. Nutze deutsche Übungsnamen.`;
 
     const plan = JSON.parse(jsonMatch[0]);
     localStorage.setItem(KEYS.TRAINING_PLAN, JSON.stringify(plan));
+    scheduleSyncToCloud();
 
     document.getElementById('training-loading')?.classList.add('hidden');
     renderTrainingPlan(plan);
@@ -155,6 +156,7 @@ function markWorkoutDone(dayName, btn) {
   const log = JSON.parse(localStorage.getItem(KEYS.WORKOUT_LOG) || '[]');
   log.push({ date: new Date().toISOString(), type: dayName });
   localStorage.setItem(KEYS.WORKOUT_LOG, JSON.stringify(log));
+  scheduleSyncToCloud();
 
   if (btn) {
     btn.textContent = '✅ Eingetragen!';

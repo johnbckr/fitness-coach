@@ -22,6 +22,7 @@ function loadChatHistory() {
 function saveChatHistory() {
   if (chatHistory.length > 60) chatHistory = chatHistory.slice(-60);
   localStorage.setItem(KEYS.CHAT_HISTORY, JSON.stringify(chatHistory));
+  scheduleSyncToCloud();
 }
 
 function renderMessages() {

@@ -81,6 +81,7 @@ function finishOnboarding() {
   };
 
   saveProfile(profile);
+  getOrCreateSyncCode();
   document.getElementById('bottom-nav').classList.remove('hidden');
   navigate('dashboard');
 }

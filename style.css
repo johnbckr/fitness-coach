@@ -830,6 +830,49 @@ select {
 .api-key-row .btn-ghost { flex-shrink: 0; padding: 10px 12px; }
 
 /* ═══════════════════════════════════════════
+   SYNC
+═══════════════════════════════════════════ */
+.sync-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin: 12px 0;
+}
+.sync-code-text {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: var(--accent);
+  font-family: monospace;
+}
+.sync-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.sync-actions .btn-outline,
+.sync-actions .btn-primary { flex: 1; }
+.sync-last {
+  font-size: 12px;
+  color: var(--text3);
+  text-align: center;
+  margin-top: 6px;
+}
+.sync-status-msg {
+  font-size: 13px;
+  text-align: center;
+  min-height: 20px;
+  margin-top: 6px;
+}
+.sync-status-msg.ok { color: var(--green); }
+.sync-status-msg.error { color: var(--red); }
+.sync-status-msg.neutral { color: var(--text2); }
+
+/* ═══════════════════════════════════════════
    UTILITIES + ANIMATIONS
 ═══════════════════════════════════════════ */
 @keyframes fadeIn {

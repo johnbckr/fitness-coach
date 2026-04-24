@@ -15,6 +15,7 @@ function logWeight() {
   const log = JSON.parse(localStorage.getItem(KEYS.WEIGHT_LOG) || '[]');
   log.push({ date: new Date().toISOString(), weight });
   localStorage.setItem(KEYS.WEIGHT_LOG, JSON.stringify(log));
+  scheduleSyncToCloud();
 
   if (input) input.value = '';
 
