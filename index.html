@@ -292,50 +292,209 @@
 
 
   <!-- ═══════════════════════════════════════════
-       PROFILE (Settings)
+       EINSTELLUNGEN
   ═══════════════════════════════════════════ -->
   <div id="page-profile" class="page hidden">
     <div class="page-scroll">
       <div class="page-header">
         <button class="back-btn" onclick="navigate('dashboard')">← Zurück</button>
-        <h2>Profil</h2>
+        <h2>Einstellungen</h2>
         <div></div>
       </div>
 
-      <div class="card">
-        <h3>Fotos aktualisieren</h3>
-        <div class="photo-grid">
-          <div class="photo-card">
-            <label class="photo-label" for="profile-photo-current">
-              <img id="profile-preview-current" class="photo-preview hidden" alt="Jetzt">
-              <div class="photo-placeholder" id="profile-ph-current">
-                <span class="photo-icon">+</span>
-                <p>Aktuelles Foto</p>
-              </div>
-            </label>
-            <input type="file" id="profile-photo-current" accept="image/*" class="hidden"
-                   onchange="handlePhotoUpload('current', this); refreshProfilePhotos()">
+      <div class="tabs-bar">
+        <button class="tab-btn active" onclick="switchProfileTab('data', this)">Profil</button>
+        <button class="tab-btn" onclick="switchProfileTab('api', this)">API</button>
+        <button class="tab-btn" onclick="switchProfileTab('photos', this)">Fotos</button>
+      </div>
+
+      <!-- ── TAB: PROFIL BEARBEITEN ── -->
+      <div id="ptab-data" class="profile-tab-content">
+        <div class="form-group">
+          <label>Name <span class="required">*</span></label>
+          <input type="text" id="edit-name" placeholder="Dein Name">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Geburtsdatum <span class="required">*</span></label>
+            <input type="date" id="edit-birthdate" max="">
           </div>
-          <div class="photo-card">
-            <label class="photo-label" for="profile-photo-goal">
-              <img id="profile-preview-goal" class="photo-preview hidden" alt="Ziel">
-              <div class="photo-placeholder" id="profile-ph-goal">
-                <span class="photo-icon">🎯</span>
-                <p>Ziel-Foto</p>
+          <div class="form-group">
+            <label>Geschlecht</label>
+            <select id="edit-gender">
+              <option value="männlich">Männlich</option>
+              <option value="weiblich">Weiblich</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Gewicht (kg)</label>
+            <input type="number" id="edit-weight" step="0.5" min="40" max="200">
+          </div>
+          <div class="form-group">
+            <label>Größe (cm)</label>
+            <input type="number" id="edit-height" min="140" max="220">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Körperfett % <span class="optional">(optional)</span></label>
+          <input type="number" id="edit-bf" step="0.5" min="5" max="50">
+        </div>
+        <div class="form-group">
+          <label>Fitnesslevel</label>
+          <select id="edit-fitness">
+            <option value="Anfänger">Anfänger</option>
+            <option value="Fortgeschritten">Fortgeschritten</option>
+            <option value="Profi">Profi</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Trainingstage/Woche</label>
+            <select id="edit-days">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mahlzeiten/Tag</label>
+            <select id="edit-meals">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Equipment</label>
+          <select id="edit-equipment">
+            <option value="Fitnessstudio">Fitnessstudio</option>
+            <option value="Zuhause">Zuhause</option>
+            <option value="Beides">Beides</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ernährungsform</label>
+          <select id="edit-diet">
+            <option value="Normal">Normal</option>
+            <option value="Vegetarisch">Vegetarisch</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Laktosefrei">Laktosefrei</option>
+            <option value="Glutenfrei">Glutenfrei</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Allergien <span class="optional">(optional)</span></label>
+          <input type="text" id="edit-allergies" placeholder="z.B. Nüsse, Fisch...">
+        </div>
+        <div class="form-group">
+          <label>Aktivitätslevel</label>
+          <select id="edit-activity">
+            <option value="sitzend">Sitzend</option>
+            <option value="leicht aktiv">Leicht aktiv</option>
+            <option value="aktiv">Aktiv</option>
+            <option value="sehr aktiv">Sehr aktiv</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Schichtarbeit?</label>
+          <select id="edit-shiftwork">
+            <option value="no">Nein</option>
+            <option value="yes">Ja</option>
+          </select>
+        </div>
+        <div class="form-group hidden" id="edit-shift-group">
+          <label>Schichtsystem</label>
+          <input type="text" id="edit-shift-details" placeholder="z.B. Früh/Spät/Nacht wechselnd">
+        </div>
+        <button class="btn-primary full-width" onclick="saveProfileEdit()" style="margin-top:8px">
+          Speichern
+        </button>
+        <p class="save-feedback hidden" id="edit-save-feedback">✅ Gespeichert!</p>
+      </div>
+
+      <!-- ── TAB: API & ANBIETER ── -->
+      <div id="ptab-api" class="profile-tab-content hidden">
+        <div class="card">
+          <h3>KI-Anbieter</h3>
+          <p class="settings-hint">Wähle einen Anbieter — nur einer kann aktiv sein.</p>
+          <div class="provider-selector" id="provider-selector">
+            <button class="provider-btn" data-provider="anthropic" onclick="selectProvider('anthropic')">
+              <span class="provider-icon">🟠</span>
+              <div>
+                <strong>Claude</strong>
+                <span>claude-sonnet-4-6</span>
               </div>
-            </label>
-            <input type="file" id="profile-photo-goal" accept="image/*" class="hidden"
-                   onchange="handlePhotoUpload('goal', this); refreshProfilePhotos()">
+            </button>
+            <button class="provider-btn" data-provider="gemini" onclick="selectProvider('gemini')">
+              <span class="provider-icon">🔵</span>
+              <div>
+                <strong>Gemini</strong>
+                <span>gemini-2.0-flash</span>
+              </div>
+            </button>
+            <button class="provider-btn" data-provider="openai" onclick="selectProvider('openai')">
+              <span class="provider-icon">🟢</span>
+              <div>
+                <strong>OpenAI</strong>
+                <span>gpt-4o</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>API Key</h3>
+          <p class="settings-hint" id="api-key-hint">Wird sicher in deinem Browser gespeichert.</p>
+          <div class="api-key-row">
+            <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+            <button class="btn-ghost" onclick="toggleApiKeyVisibility()" id="api-key-toggle">👁</button>
+          </div>
+          <button class="btn-primary full-width" onclick="saveApiKey()" style="margin-top:10px">
+            API Key speichern
+          </button>
+          <p class="save-feedback hidden" id="api-save-feedback">✅ Gespeichert!</p>
+          <div id="api-key-status" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- ── TAB: FOTOS ── -->
+      <div id="ptab-photos" class="profile-tab-content hidden">
+        <div class="card">
+          <h3>Fotos aktualisieren</h3>
+          <div class="photo-grid">
+            <div class="photo-card">
+              <label class="photo-label" for="profile-photo-current">
+                <img id="profile-preview-current" class="photo-preview hidden" alt="Jetzt">
+                <div class="photo-placeholder" id="profile-ph-current">
+                  <span class="photo-icon">+</span>
+                  <p>Aktuelles Foto</p>
+                </div>
+              </label>
+              <input type="file" id="profile-photo-current" accept="image/*" class="hidden"
+                     onchange="handlePhotoUpload('current', this); refreshProfilePhotos()">
+            </div>
+            <div class="photo-card">
+              <label class="photo-label" for="profile-photo-goal">
+                <img id="profile-preview-goal" class="photo-preview hidden" alt="Ziel">
+                <div class="photo-placeholder" id="profile-ph-goal">
+                  <span class="photo-icon">🎯</span>
+                  <p>Ziel-Foto</p>
+                </div>
+              </label>
+              <input type="file" id="profile-photo-goal" accept="image/*" class="hidden"
+                     onchange="handlePhotoUpload('goal', this); refreshProfilePhotos()">
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="card" id="profile-info-card">
-        <h3>Profil-Daten</h3>
-        <div id="profile-info-content"></div>
-      </div>
-
-      <button class="btn-danger" onclick="resetApp()">App zurücksetzen</button>
+      <button class="btn-danger" onclick="resetApp()" style="margin-top:8px">App zurücksetzen</button>
     </div>
   </div>
 

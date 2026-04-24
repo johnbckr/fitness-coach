@@ -9,7 +9,9 @@ const KEYS = {
   WORKOUT_LOG:   'fc_workout_log',
   PHOTO_CURRENT: 'fc_photo_current',
   PHOTO_GOAL:    'fc_photo_goal',
-  MEAL_LOG:      'fc_meal_log'
+  MEAL_LOG:      'fc_meal_log',
+  API_KEY:       'fc_api_key',
+  API_PROVIDER:  'fc_api_provider'
 };
 
 // ═══════════════════════════════════════════
@@ -103,14 +105,27 @@ async function handlePhotoUpload(type, input) {
 // ═══════════════════════════════════════════
 // CLAUDE API CALL
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// API SETTINGS
+// ═══════════════════════════════════════════
+function getApiProvider() {
+  return localStorage.getItem(KEYS.API_PROVIDER) || 'anthropic';
+}
+
+function getApiKey() {
+  return localStorage.getItem(KEYS.API_KEY) || '';
+}
+
 async function callCoach(messages, customSystemPrompt) {
   const profile = getProfile();
   const systemPrompt = customSystemPrompt || buildSystemPrompt(profile);
+  const provider = getApiProvider();
+  const apiKey = getApiKey();
 
   const response = await fetch('/.netlify/functions/coach', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, systemPrompt })
+    body: JSON.stringify({ messages, systemPrompt, provider, apiKey })
   });
 
   if (!response.ok) {
@@ -245,47 +260,141 @@ function initDashboard() {
 }
 
 // ═══════════════════════════════════════════
-// PROFILE PAGE
+// PROFILE / SETTINGS PAGE
 // ═══════════════════════════════════════════
 function initProfile() {
-  const profile = getProfile();
+  prefillEditForm();
   refreshProfilePhotos();
+  renderApiTab();
 
-  const content = document.getElementById('profile-info-content');
-  if (!content || !profile) return;
+  const editBirthdate = document.getElementById('edit-birthdate');
+  if (editBirthdate) editBirthdate.max = new Date().toISOString().split('T')[0];
 
-  const age = getAge(profile);
-  const birthFormatted = profile.birthDate
-    ? new Date(profile.birthDate).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '—';
+  const editShiftwork = document.getElementById('edit-shiftwork');
+  if (editShiftwork) {
+    editShiftwork.addEventListener('change', () => {
+      const group = document.getElementById('edit-shift-group');
+      if (group) group.classList.toggle('hidden', editShiftwork.value !== 'yes');
+    });
+  }
+}
 
-  const rows = [
-    ['Name', profile.name],
-    ['Geburtsdatum', birthFormatted],
-    ['Alter', age + ' Jahre'],
-    ['Gewicht', profile.weight + ' kg'],
-    ['Größe', profile.height + ' cm'],
-    ['Fitnesslevel', profile.fitnessLevel],
-    ['Trainingstage', profile.trainingDays + 'x/Woche'],
-    ['Equipment', profile.equipment],
-    ['Ernährung', profile.diet],
-    ['Schichtarbeit', profile.shiftWork ? 'Ja' : 'Nein'],
-  ];
+function switchProfileTab(tabName, btn) {
+  document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tabs-bar .tab-btn').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById('ptab-' + tabName);
+  if (target) target.classList.remove('hidden');
+  if (btn) btn.classList.add('active');
+  if (tabName === 'photos') refreshProfilePhotos();
+  if (tabName === 'api') renderApiTab();
+}
 
-  content.innerHTML = rows.map(([label, val]) => `
-    <div class="profile-info-row">
-      <span>${label}</span>
-      <span>${val}</span>
-    </div>
-  `).join('');
+function prefillEditForm() {
+  const p = getProfile();
+  if (!p) return;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null) el.value = val;
+  };
+  set('edit-name', p.name);
+  set('edit-birthdate', p.birthDate);
+  set('edit-gender', p.gender);
+  set('edit-weight', p.weight);
+  set('edit-height', p.height);
+  set('edit-bf', p.bodyFat || '');
+  set('edit-fitness', p.fitnessLevel);
+  set('edit-days', p.trainingDays);
+  set('edit-meals', p.mealsPerDay);
+  set('edit-equipment', p.equipment);
+  set('edit-diet', p.diet);
+  set('edit-allergies', p.allergies || '');
+  set('edit-activity', p.activityLevel);
+  set('edit-shiftwork', p.shiftWork ? 'yes' : 'no');
+  set('edit-shift-details', p.shiftDetails || '');
+  const shiftGroup = document.getElementById('edit-shift-group');
+  if (shiftGroup) shiftGroup.classList.toggle('hidden', !p.shiftWork);
+}
+
+function saveProfileEdit() {
+  const existing = getProfile() || {};
+  const updated = {
+    ...existing,
+    name:          document.getElementById('edit-name')?.value.trim() || existing.name,
+    birthDate:     document.getElementById('edit-birthdate')?.value || existing.birthDate,
+    gender:        document.getElementById('edit-gender')?.value || existing.gender,
+    weight:        parseFloat(document.getElementById('edit-weight')?.value) || existing.weight,
+    height:        parseInt(document.getElementById('edit-height')?.value) || existing.height,
+    bodyFat:       parseFloat(document.getElementById('edit-bf')?.value) || null,
+    fitnessLevel:  document.getElementById('edit-fitness')?.value || existing.fitnessLevel,
+    trainingDays:  parseInt(document.getElementById('edit-days')?.value) || existing.trainingDays,
+    mealsPerDay:   parseInt(document.getElementById('edit-meals')?.value) || existing.mealsPerDay,
+    equipment:     document.getElementById('edit-equipment')?.value || existing.equipment,
+    diet:          document.getElementById('edit-diet')?.value || existing.diet,
+    allergies:     document.getElementById('edit-allergies')?.value.trim() || '',
+    activityLevel: document.getElementById('edit-activity')?.value || existing.activityLevel,
+    shiftWork:     document.getElementById('edit-shiftwork')?.value === 'yes',
+    shiftDetails:  document.getElementById('edit-shift-details')?.value.trim() || ''
+  };
+  saveProfile(updated);
+  const fb = document.getElementById('edit-save-feedback');
+  if (fb) { fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2500); }
+}
+
+// ── API Settings ──────────────────────────────────────────────
+function renderApiTab() {
+  const provider = getApiProvider();
+  const key = getApiKey();
+
+  document.querySelectorAll('.provider-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.provider === provider);
+  });
+
+  const input = document.getElementById('api-key-input');
+  if (input && key) input.value = key;
+
+  const status = document.getElementById('api-key-status');
+  if (status) {
+    const labels = { anthropic: 'Claude', gemini: 'Gemini', openai: 'OpenAI' };
+    status.innerHTML = key
+      ? `<span style="color:var(--green);font-size:13px">✅ ${labels[provider] || provider} aktiv</span>`
+      : `<span style="color:var(--text3);font-size:13px">Kein Key gespeichert — Netlify Env Variable wird verwendet</span>`;
+  }
+
+  const hints = {
+    anthropic: 'console.anthropic.com → API Keys',
+    gemini:    'aistudio.google.com → Get API key',
+    openai:    'platform.openai.com → API keys'
+  };
+  const hint = document.getElementById('api-key-hint');
+  if (hint) hint.textContent = hints[provider] || '';
+}
+
+function selectProvider(provider) {
+  localStorage.setItem(KEYS.API_PROVIDER, provider);
+  localStorage.removeItem(KEYS.API_KEY);
+  const input = document.getElementById('api-key-input');
+  if (input) input.value = '';
+  renderApiTab();
+}
+
+function saveApiKey() {
+  const input = document.getElementById('api-key-input');
+  const key = input?.value.trim();
+  if (!key) { alert('Bitte einen API Key eingeben.'); return; }
+  localStorage.setItem(KEYS.API_KEY, key);
+  renderApiTab();
+  const fb = document.getElementById('api-save-feedback');
+  if (fb) { fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2500); }
+}
+
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('api-key-input');
+  if (input) input.type = input.type === 'password' ? 'text' : 'password';
 }
 
 function refreshProfilePhotos() {
-  const photoCurrent = getPhoto('current');
-  const photoGoal = getPhoto('goal');
-
   ['current', 'goal'].forEach(type => {
-    const photo = type === 'current' ? photoCurrent : photoGoal;
+    const photo = getPhoto(type);
     const preview = document.getElementById('profile-preview-' + type);
     const ph = document.getElementById('profile-ph-' + type);
     if (preview && photo) {
