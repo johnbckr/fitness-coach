@@ -1,3 +1,6 @@
+// Polyfill fetch for Node < 18
+const _fetch = typeof fetch !== 'undefined' ? fetch : (...args) => import('node-fetch').then(m => m.default(...args));
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -46,7 +49,7 @@ exports.handler = async (event) => {
 
 // ── Anthropic / Claude ────────────────────────────────────────
 async function callAnthropic(key, systemPrompt, messages) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await _fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -80,7 +83,7 @@ async function callGemini(key, systemPrompt, messages) {
       : [{ text: msg.content }]
   }));
 
-  const res = await fetch(
+  const res = await _fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
     {
       method: 'POST',
@@ -117,7 +120,7 @@ async function callOpenAI(key, systemPrompt, messages) {
     }))
   ];
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  const res = await _fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
