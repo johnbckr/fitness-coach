@@ -494,14 +494,8 @@ async function connectSyncCode() {
     applySyncData(row.data);
     localStorage.setItem(KEYS.SYNC_CODE, code);
     localStorage.setItem(KEYS.SYNC_LAST, row.updated_at || new Date().toISOString());
-    setSyncMsg('✅ Verbunden! Daten wurden übertragen.', 'ok');
-    initSyncTab();
-    // Reload app state
-    const profile = getProfile();
-    if (profile) {
-      document.getElementById('bottom-nav').classList.remove('hidden');
-      navigate('dashboard');
-    }
+    setSyncMsg('✅ Verbunden! App wird neu geladen...', 'ok');
+    setTimeout(() => window.location.reload(), 1500);
   } catch (err) {
     setSyncMsg('❌ Fehler: ' + err.message, 'error');
   } finally {
