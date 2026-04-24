@@ -90,10 +90,7 @@ async function sendMessage() {
 
   } catch (err) {
     hideTyping();
-    chatHistory.push({
-      role: 'assistant',
-      content: '⚠️ Ich bin gerade nicht erreichbar. Bitte prüfe deine Verbindung und versuche es erneut.'
-    });
+    chatHistory.push({ role: 'assistant', content: buildErrorMessage(err) });
     saveChatHistory();
     renderMessages();
   } finally {
@@ -151,6 +148,28 @@ function clearChat() {
   chatHistory = [];
   saveChatHistory();
   renderMessages();
+}
+
+function buildErrorMessage(err) {
+  const msg = err?.message || '';
+
+  if (window.location.protocol === 'file:') {
+    return '⚠️ **Lokale Datei erkannt**\n\nDie App muss über einen Server laufen damit der Coach funktioniert. Zwei Optionen:\n\n**Option 1 (empfohlen):** Nutze die Netlify URL deiner App\n**Option 2 (lokal):** Starte `netlify dev` im Terminal im Projektordner';
+  }
+
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('net::')) {
+    return '⚠️ **Verbindungsfehler**\n\nDie Netlify Function ist nicht erreichbar. Mögliche Ursachen:\n• Kein Internet\n• App noch nicht auf Netlify deployed\n• Netlify Function hat einen Fehler';
+  }
+
+  if (msg.includes('API Key') || msg.includes('api_key') || msg.includes('authentication') || msg.includes('401')) {
+    return '⚠️ **API Key Fehler**\n\nDer API Key ist ungültig oder abgelaufen. Geh in **Einstellungen → API** und prüfe deinen Key.';
+  }
+
+  if (msg.includes('quota') || msg.includes('429') || msg.includes('rate limit')) {
+    return '⚠️ **Limit erreicht**\n\nDein API-Kontingent ist aufgebraucht oder du sendest zu schnell. Kurz warten und erneut versuchen.';
+  }
+
+  return `⚠️ **Fehler:** ${msg || 'Unbekannter Fehler'}\n\nPrüfe den API Key in den Einstellungen.`;
 }
 
 function showTyping() {

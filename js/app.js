@@ -442,6 +442,10 @@ function getWeekStart() {
 // APP INIT
 // ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.protocol === 'file:') {
+    showLocalFileBanner();
+  }
+
   const profile = getProfile();
   if (profile) {
     document.getElementById('bottom-nav').classList.remove('hidden');
@@ -450,3 +454,18 @@ document.addEventListener('DOMContentLoaded', () => {
     navigate('onboarding');
   }
 });
+
+function showLocalFileBanner() {
+  const banner = document.createElement('div');
+  banner.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: #b45309; color: #fff; padding: 10px 16px;
+    font-size: 13px; line-height: 1.4; text-align: center;
+  `;
+  banner.innerHTML = `
+    ⚠️ <strong>Lokale Datei</strong> — Der Coach funktioniert nur über einen Server.
+    Nutze deine <strong>Netlify URL</strong> oder starte lokal mit <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px">netlify dev</code>.
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#fff;margin-left:10px;cursor:pointer;font-size:15px">✕</button>
+  `;
+  document.body.prepend(banner);
+}
